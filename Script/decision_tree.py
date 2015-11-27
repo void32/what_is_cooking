@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import sys
 
 import os
 import subprocess
@@ -15,17 +16,18 @@ raw = pd.read_json("../Data/train.json")
 
 # __Labels__
 # Find all possible cuisines
-posibleCuisine = set(raw["cuisine"])
-
+posibleCuisine = list(set(raw["cuisine"]))
+print("#posibleCuisine="+str(len(posibleCuisine)))
 #  Make map: Cuisine->{0,1,2,..}
 indexToCuisine = dict(zip(range(len(posibleCuisine)), posibleCuisine))
+
+tblLabels = [posibleCuisine.index(x) for x in raw["cuisine"]]
 
 # __Features__
 # Find all possible ingredients
 posibleIngredients = list(set(reduce(lambda x,y: x+y, [x for x in raw["ingredients"]])))
-#ingredientToIndex = dict( zip(posibleIngredients, len(posibleIngredients)) )
 
-#print(ingredientToIndex)
+print("#posibleIngredientslen="+str(len(posibleIngredients)))
 
 
 # Make table with row for each training case and collumn for each possible ingredient
@@ -44,19 +46,24 @@ for stufs in raw["ingredients"]:
         else:
             row.append(0)
     tblFeatures.append(row)
-print(tblFeatures)
 
 
 
 ### Train ###
 # Fitting the decision tree with scikit-learn
-y = range(len(posibleCuisine) # Labels
+y = tblLabels # Labels
 X = tblFeatures # features
-dt = DecisionTreeClassifier(min_samples_split=20, random_state=99)
+
+# Get the min_samples_split as the no 1 argument 
+if (len(sys.argv) > 1):
+        mss=sys.argv[1] #min_samples_split
+    else:
+        mss=1000 # A default value
+dt = DecisionTreeClassifier(min_samples_split=mss, random_state=99)
 dt.fit(X, y)
 
 ### Visualization ###
-def visualize_tree(tree, feature_names):
+def visualize_tree(tree, feature_names, name_suffix=""):
     """Create tree png using graphviz.
 
     Args
@@ -64,18 +71,18 @@ def visualize_tree(tree, feature_names):
     tree -- scikit-learn DecsisionTree.
     feature_names -- list of feature names.
     """
-    with open("dt.dot", 'w') as f:
+    with open("dt"+name_suffix+".dot", 'w') as f:
         export_graphviz(tree, out_file=f,
                         feature_names=feature_names)
 
-    command = ["dot", "-Tpng", "dt.dot", "-o", "dt.png"]
+    command = ["dot", "-Tpng", "dt"+name_suffix+".dot", "-o", "dt"+name_suffix+".png"]
     try:
         subprocess.check_call(command)
     except:
         exit("Could not run dot, ie graphviz, to "
-             "produce visualization")
+             "produce visualization ("+name_suffix+")")
 
-visualize_tree(dt, features)
+visualize_tree(dt, posibleIngredients, mss)
 
 ### Load test data ###
 
