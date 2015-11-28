@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
 ### Load training data ###
-raw = pd.read_json("../Data/train.json")
+raw = pd.read_json("../Data/small_train.json")
 
 ### Preprocessing ###
 
@@ -28,7 +28,6 @@ tblLabels = [posibleCuisine.index(x) for x in raw["cuisine"]]
 posibleIngredients = list(set(reduce(lambda x,y: x+y, [x for x in raw["ingredients"]])))
 
 print("#posibleIngredientslen="+str(len(posibleIngredients)))
-
 
 # Make table with row for each training case and collumn for each possible ingredient
 #{0,1},{0,1},{0,1},...{0,1}
@@ -56,26 +55,20 @@ X = tblFeatures # features
 
 # Get the min_samples_split as the no 1 argument 
 if (len(sys.argv) > 1):
-        mss=sys.argv[1] #min_samples_split
-    else:
-        mss=1000 # A default value
+    mss=int(sys.argv[1]) #min_samples_split
+else:
+    mss=1000 # A default value
+
 dt = DecisionTreeClassifier(min_samples_split=mss, random_state=99)
 dt.fit(X, y)
 
 ### Visualization ###
 def visualize_tree(tree, feature_names, name_suffix=""):
-    """Create tree png using graphviz.
-
-    Args
-    ----
-    tree -- scikit-learn DecsisionTree.
-    feature_names -- list of feature names.
-    """
-    with open("dt"+name_suffix+".dot", 'w') as f:
+    with open("dt"+str(name_suffix)+".dot", 'w') as f:
         export_graphviz(tree, out_file=f,
                         feature_names=feature_names)
 
-    command = ["dot", "-Tpng", "dt"+name_suffix+".dot", "-o", "dt"+name_suffix+".png"]
+    command = ["dot", "-Tpng", "dt"+str(name_suffix)+".dot", "-o", "dt"+str(name_suffix)+".png"]
     try:
         subprocess.check_call(command)
     except:
@@ -85,23 +78,37 @@ def visualize_tree(tree, feature_names, name_suffix=""):
 visualize_tree(dt, posibleIngredients, mss)
 
 ### Load test data ###
+test = pd.read_json("../Data/test.json")
+testID = test["id"]
+#testIngredients = test["ingredients"]
+
+# Make table with row for each training case and collumn for each possible ingredient
+#{0,1},{0,1},{0,1},...{0,1}
+#{0,1},{0,1},{0,1},...{0,1}
+# .                        
+#           .              
+#                       .  
+#{0,1},{0,1},{0,1},...{0,1}
+testTblFeatures = []
+for stufs in test["ingredients"]:
+    row = []
+    for colIndex in range(len(posibleIngredients)):
+        if posibleIngredients[colIndex] in stufs:
+            row.append(1)
+        else:
+            row.append(0)
+    testTblFeatures.append(row)
 
 ### Predict ###
-
-### Save submission ###
-
-# In order to pass this data into scikit-learn we need to encode the 
-# Names to integers
+predictedCuisineIndex = dt.predict(testTblFeatures)
+predictedCuisineName = [indexToCuisine[i] for i in predictedCuisineIndex]
 
 
+### Write to submission file ###
+submissionFile = open('submission'+str(mss)+'.csv','w')
+submissionFile.write("id,cuisine\n")
+for i in range(len(testID)):
+    submissionFile.write(str(testID[i])+","+str(predictedCuisineName[i])+"\n")
+submissionFile.close()
 
-############################################################
-
-#df2, targets = encode_target(df, "Name")
-
-
-
-# Visualizing the tree:
-
-# Make a solution submission
-
+print("done:"+str(mss))
