@@ -145,11 +145,14 @@ class WorkerThread(threading.Thread):
 
 # Get the min_samples_split as program arguments
 for mss in sys.argv[1:]:
-    # Create new threads
-    thread = WorkerThread(int(mss))
-    
-    # Start thread
-    thread.start()
+    if int(mss) > 0:
+        # Create new threads
+        thread = WorkerThread(int(mss))
+        
+        # Start thread
+        thread.start()
+    else:
+        print("min_samples_split must be greater than zero: mss="+str(mss))
 
 print("Exiting Main Thread")
 
