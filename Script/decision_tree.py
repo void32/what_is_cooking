@@ -79,11 +79,11 @@ class WorkerThread(threading.Thread):
 
         ### Visualization ###
         def visualize_tree(tree, feature_names, name_suffix=""):
-            with open("dt"+str(name_suffix)+".dot", 'w') as f:
+            with open("../Visualizations/dt"+str(name_suffix)+".dot", 'w') as f:
                 export_graphviz(tree, out_file=f,
                                 feature_names=feature_names)
 
-            command = ["dot", "-Tpng", "dt"+str(name_suffix)+".dot", "-o", "dt"+str(name_suffix)+".png"]
+            command = ["dot", "-Tpng", "../Visualizations/dt"+str(name_suffix)+".dot", "-o", "../Visualizations/dt"+str(name_suffix)+".png"]
             try:
                 subprocess.check_call(command)
             except:
@@ -127,7 +127,7 @@ class WorkerThread(threading.Thread):
 
     def output(self):
         ### Write to submission file ###
-        submissionFile = open('submission'+str(self.mss)+'.csv','w')
+        submissionFile = open('../Submissions/submission'+str(self.mss)+'.csv','w')
         submissionFile.write("id,cuisine\n")
         for i in range(len(self.testID)):
             submissionFile.write(str(self.testID[i])+","+str(self.predictedCuisineName[i])+"\n")
