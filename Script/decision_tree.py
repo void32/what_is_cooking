@@ -38,7 +38,7 @@ tblLabels = [posibleCuisine.index(x) for x in raw["cuisine"]]
 # Find all possible ingredients
 posibleIngredients = list(set(reduce(lambda x,y: x+y, [x for x in raw["ingredients"]])))
 
-print("#posibleIngredientslen="+str(len(posibleIngredients)))
+print("#posibleIngredients="+str(len(posibleIngredients)))
 
 # Make table with row for each training case and collumn for each possible ingredient
 #{0,1},{0,1},{0,1},...{0,1}
