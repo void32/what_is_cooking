@@ -74,8 +74,6 @@ class WorkerThread(threading.Thread):
         X = tblFeatures # features
 
         # Train the model
-        print(y)
-        print(X)
         self.dt = DecisionTreeClassifier(min_samples_split=self.mss, random_state=99)
         self.dt.fit(X, y)
 
@@ -97,7 +95,7 @@ class WorkerThread(threading.Thread):
 
 
     def predict(self):
-        if self.testID != None and self.dt != None:
+        if self.dt != None:
             ### Load test data ###
             test = pd.read_json("../Data/test.json")
             self.testID = test["id"]
@@ -123,16 +121,17 @@ class WorkerThread(threading.Thread):
             ### Predict ###
             predictedCuisineIndex = self.dt.predict(testTblFeatures)
             self.predictedCuisineName = [indexToCuisine[i] for i in predictedCuisineIndex]
-
+        else:
+            print("self.dt="+str(self.dt))
+            print("self.testID="+str(self.testID))
 
     def output(self):
-        if self.testID != None:
-            ### Write to submission file ###
-            submissionFile = open('submission'+str(self.mss)+'.csv','w')
-            submissionFile.write("id,cuisine\n")
-            for i in range(len(testID)):
-                submissionFile.write(str(testID[i])+","+str(self.predictedCuisineName[i])+"\n")
-            submissionFile.close()
+        ### Write to submission file ###
+        submissionFile = open('submission'+str(self.mss)+'.csv','w')
+        submissionFile.write("id,cuisine\n")
+        for i in range(len(self.testID)):
+            submissionFile.write(str(self.testID[i])+","+str(self.predictedCuisineName[i])+"\n")
+        submissionFile.close()
 
     def run(self):
         print("Starting " + str(self.mss))
