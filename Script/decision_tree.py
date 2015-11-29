@@ -19,6 +19,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
 import threading
+import time
 
 ### Load training data ###
 raw = pd.read_json("../Data/train.json")
@@ -133,12 +134,14 @@ class WorkerThread(threading.Thread):
             submissionFile.write(str(self.testID[i])+","+str(self.predictedCuisineName[i])+"\n")
         submissionFile.close()
 
+
     def run(self):
         print("Starting " + str(self.mss))
+        startTime = time.time()
         self.train()
         self.predict()
         self.output()
-        print("Exiting " + str(self.mss))
+        print("Exiting " + str(self.mss) + " time=" + str(time.time() - startTime))
 
 
 ################################################################################
