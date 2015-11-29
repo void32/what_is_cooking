@@ -21,7 +21,7 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz
 import threading
 
 ### Load training data ###
-raw = pd.read_json("../Data/small_train.json")
+raw = pd.read_json("../Data/train.json")
 
 ### Preprocessing ###
 
