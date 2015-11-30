@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Render png from dot
+#
+# dot2png <dot-file>
+#
+################################################################################
+
+for dot_file_name in "$@"
+do
+    file_name=$(echo $dot_file_name | awk -F'.' '{print $1}')
+    pgn_file_name=$file_name.png
+
+    echo $dot_file_name
+    dot -Tpng $dot_file_name -o  ./$pgn_file_name
+done
+
+

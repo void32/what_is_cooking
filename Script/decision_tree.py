@@ -62,11 +62,18 @@ for stufs in raw["ingredients"]:
 
 class WorkerThread(threading.Thread):
 
-    def __init__(self, min_samples_split):
+    def __init__(self, min_samples_split,criterion="gini"):
+        # Arguments
         threading.Thread.__init__(self)
         self.mss = int(min_samples_split)
+        self.criterion=criterion
+
+        # Internal stuff
         self.dt = None
         self.testID = None
+
+    def filename(self):
+        return("dt"+str(self.mss)+str(self.criterion))
 
     def train(self):
         ### Train ###
@@ -75,23 +82,17 @@ class WorkerThread(threading.Thread):
         X = tblFeatures # features
 
         # Train the model
-        self.dt = DecisionTreeClassifier(min_samples_split=self.mss, random_state=99)
+        self.dt = DecisionTreeClassifier(min_samples_split=self.mss,
+                                         criterion=self.criterion)
         self.dt.fit(X, y)
 
         ### Visualization ###
-        def visualize_tree(tree, feature_names, name_suffix=""):
-            with open("../Visualizations/dt"+str(name_suffix)+".dot", 'w') as f:
-                export_graphviz(tree, out_file=f,
-                                feature_names=feature_names)
+        def visualize_tree(tree, feature_names):
+            f=open("../Visualizations/"+self.filename()+".dot", 'w') 
+            export_graphviz(tree, out_file=f, feature_names=feature_names)
+            f.close()
 
-            command = ["dot", "-Tpng", "../Visualizations/dt"+str(name_suffix)+".dot", "-o", "../Visualizations/dt"+str(name_suffix)+".png"]
-            try:
-                subprocess.check_call(command)
-            except:
-                exit("Could not run dot, ie graphviz, to "
-                     "produce visualization ("+name_suffix+")")
-
-        visualize_tree(self.dt, posibleIngredients, str(self.mss))
+        visualize_tree(self.dt, posibleIngredients)
 
 
 
@@ -128,7 +129,7 @@ class WorkerThread(threading.Thread):
 
     def output(self):
         ### Write to submission file ###
-        submissionFile = open('../Submissions/submission'+str(self.mss)+'.csv','w')
+        submissionFile = open('../Submissions/submission'+str(self.filename())+'.csv','w')
         submissionFile.write("id,cuisine\n")
         for i in range(len(self.testID)):
             submissionFile.write(str(self.testID[i])+","+str(self.predictedCuisineName[i])+"\n")
@@ -150,7 +151,7 @@ class WorkerThread(threading.Thread):
 for mss in sys.argv[1:]:
     if int(mss) > 0:
         # Create new threads
-        thread = WorkerThread(int(mss))
+        thread = WorkerThread(int(mss),"entropy")
         
         # Start thread
         thread.start()

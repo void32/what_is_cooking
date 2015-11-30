@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+################################################################################
+# Render pdf from dot
+#
+# dot2pdf <dot-file>
+#
+################################################################################
+
+for dot_file_name in "$@"
+do
+    file_name=$(echo $dot_file_name | awk -F'.' '{print $1}')
+    pgn_file_name=$file_name.pdf
+
+    echo $dot_file_name
+    dot -Tpdf $dot_file_name -o  ./$pgn_file_name
+done
+
+
